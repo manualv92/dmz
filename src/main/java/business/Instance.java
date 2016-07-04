@@ -1,5 +1,7 @@
 package business;
 
+import java.util.List;
+
 /**
  * Created by manua on 30/6/2016.
  */
@@ -8,16 +10,16 @@ public class Instance {
     private final String description;
     private final long total;
     //private final String banks;
-    private Bank[] banks;
+    private List<Bank> banks;
 
-    public Instance(long id, String description, long total, String banks) {
+    public Instance(long id, String description, long total, List<Bank> banks) {
         this.id = id;
         this.description = description;
         this.total = total;
-        //this.banks = banks;
+        this.banks = banks;
     }
 
-    public Bank[] getBanks() {
+    public List<Bank> getBanks() {
         return banks;
     }
 
