@@ -1,4 +1,4 @@
-package business;
+package com.besysoft.dmz.entity;
 
 /**
  * Created by manua on 4/7/2016.

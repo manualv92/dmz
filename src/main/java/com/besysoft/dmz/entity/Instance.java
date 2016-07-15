@@ -1,4 +1,4 @@
-package business;
+package com.besysoft.dmz.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

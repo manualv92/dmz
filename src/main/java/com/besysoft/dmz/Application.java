@@ -1,4 +1,4 @@
-package business;
+package com.besysoft.dmz;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
