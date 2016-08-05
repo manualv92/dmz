@@ -1,9 +1,11 @@
 package com.besysoft.dmz.controller;
 
 import com.besysoft.dmz.entity.Process;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.besysoft.dmz.entity.User;
+import com.besysoft.dmz.security.Token;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -14,34 +16,37 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/api")
 public class InstanceController {
 
-    @CrossOrigin(origins = "*")
-    @RequestMapping("/instances")
-    public Process instance() {
-        System.out.println("8090/instances");
+    private String uri = "http://localhost:8091/api/instances";
+    HttpHeaders headers = new HttpHeaders();
+
+    public InstanceController() {
+        headers.setContentType(MediaType.APPLICATION_JSON);
+    }
+
+    @RequestMapping(
+            value = "/instances",
+            method = RequestMethod.GET,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            headers = "content-type=application/json"
+    )
+    public ResponseEntity instance(@RequestHeader String authorization) {
+        String user = new Token(authorization).getUser();
+
+        HttpEntity<String> entity = new HttpEntity<>(user, headers);
+
         RestTemplate rt = new RestTemplate();
 
-        Process i = rt.getForObject("http://localhost:8091/processes", Process.class);
+        try {
+            ResponseEntity<String> resPapiBridge = rt.exchange(uri, HttpMethod.GET, entity, String.class);
 
-        System.out.println("Intancia ameo" + i);
+            if (!("200").equals(resPapiBridge.getStatusCode().toString())) return new ResponseEntity<>("{\"sucess\": \"false\"}", HttpStatus.FORBIDDEN);
 
-/*
-        List<Bank> banks = new ArrayList<>();
-        banks.add(new Bank("BSJ", 12345));
-        banks.add(new Bank("BSC", 20000));
-        banks.add(new Bank("BERSA", 30000));
-        banks.add(new Bank("NBSF", 40000));
+            return new ResponseEntity<>(resPapiBridge.getBody(), headers, HttpStatus.OK);
+        } catch (HttpClientErrorException e) {
+            System.out.println(e.getMessage());
+        }
 
-        return new Instance(instanceNro,desc,total,banks);*/
-        return i;
+        return new ResponseEntity<>("{\"sucess\": \"false\"}", HttpStatus.OK);
     }
 
-    @CrossOrigin(origins = "*")
-    @RequestMapping(value = "/login")
-    public String login() { //@RequestParam(value="username") String username, @RequestParam(value="password") String password
-        System.out.println("AuthController, post login");
-        // System.out.println("Username: " + username);
-        //System.out.println("password: " + password);
-
-        return "success";
-    }
 }

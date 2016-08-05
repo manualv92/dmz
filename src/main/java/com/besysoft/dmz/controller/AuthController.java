@@ -2,9 +2,11 @@ package com.besysoft.dmz.controller;
 
 import com.besysoft.dmz.entity.User;
 import com.besysoft.dmz.security.Token;
+import com.besysoft.dmz.utils.JsonParser;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -26,27 +28,29 @@ public class AuthController {
     @RequestMapping(
             value = "/login",
             method = RequestMethod.POST,
-            consumes=MediaType.APPLICATION_JSON_VALUE,
-            headers = "content-type=application/json")
-
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            headers = "content-type=application/json"
+    )
     public ResponseEntity login (@RequestBody User user) {
-        System.out.println(user.getUsername());
-        System.out.println(user.getPassword());
 
-        HttpEntity<String> entity = new HttpEntity<>(user.toJsonString() , headers);
+        HttpEntity<String> entity = new HttpEntity<>(JsonParser.toJsonString(user) , headers);
         RestTemplate rt = new RestTemplate();
 
+        HttpStatus responseStatus = HttpStatus.SERVICE_UNAVAILABLE;
         try {
             ResponseEntity<String> resPapiBridge = rt.exchange(uri, HttpMethod.POST, entity, String.class);
             if (!("200").equals(resPapiBridge.getStatusCode().toString())) return new ResponseEntity<>("{\"sucess\": \"false\"}", HttpStatus.FORBIDDEN);
+            //System.out.println("{\"success\": \"true\", \"token\": \"" + "{\"user\": " + JsonParser.toJsonString(user) + "}" + "\"}");
 
-            //return new ResponseEntity<>("{\"sucess\": \"true\", \"access-token\": \"" + user.getUserToken() + "\"}", HttpStatus.OK);
-            return new ResponseEntity<>("{\"success\": \"true\", \"token\": \"" + user.getUserToken() + "\"}", headers, HttpStatus.OK);
+            return new ResponseEntity<>("{\"success\": \"true\", \"token\": \"" + Token.getJwt(user) + "\"}", headers, HttpStatus.OK);
         } catch (HttpClientErrorException e) {
+            responseStatus = HttpStatus.FORBIDDEN;
+            System.out.println(e.getMessage());
+        } catch (HttpServerErrorException e) {
             System.out.println(e.getMessage());
         }
 
-        return new ResponseEntity<>("{\"sucess\": \"false\"}", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("{\"sucess\": \"false\"}", responseStatus);
     }
 
 }
