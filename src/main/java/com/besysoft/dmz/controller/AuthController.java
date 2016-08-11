@@ -40,7 +40,6 @@ public class AuthController {
         try {
             ResponseEntity<String> resPapiBridge = rt.exchange(uri, HttpMethod.POST, entity, String.class);
             if (!("200").equals(resPapiBridge.getStatusCode().toString())) return new ResponseEntity<>("{\"sucess\": \"false\"}", HttpStatus.FORBIDDEN);
-            //System.out.println("{\"success\": \"true\", \"token\": \"" + "{\"user\": " + JsonParser.toJsonString(user) + "}" + "\"}");
 
             return new ResponseEntity<>("{\"success\": \"true\", \"token\": \"" + Token.getJwt(user) + "\"}", headers, HttpStatus.OK);
         } catch (HttpClientErrorException e) {

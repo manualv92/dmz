@@ -2,7 +2,6 @@ package com.besysoft.dmz.security;
 
 import com.besysoft.dmz.entity.User;
 import com.besysoft.dmz.utils.JsonParser;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.io.UnsupportedEncodingException;
@@ -20,14 +19,10 @@ public class Token {
     private User user;
 
     public Token(User user) {
-        System.out.println("{\"user\": " + JsonParser.toJsonString(user) + "}");
         this.user = user;
         initToken();
         this.jwt = Jwts.builder()
-                //.setSubject(user.getUsername())
-                //.setSubject("{\"user\": {\"name\": \"test\", \"pass\": \"123\"}}")
                 .setSubject("{\"user\": " + JsonParser.toJsonString(user) + "}")
-                //.setSubject('\"' + JsonParser.toJsonString(user) + '\"')
                 .signWith(SignatureAlgorithm.HS512, key)
                 .compact();
     }
@@ -39,7 +34,6 @@ public class Token {
 
     private void initToken() {
         try {
-//        key = (salt + user.getUsername() + user.getPassword()).getBytes("UTF-8");
             key = (salt).getBytes("UTF-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-512");
             key = sha.digest(key);
@@ -54,20 +48,15 @@ public class Token {
         return jwt;
     }
 
-    public String getUser() {
-        //System.out.println(JsonParser.toObject(Jwts.parser().setSigningKey(this.key).parseClaimsJws(this.jwt).getBody().getSubject()));
+    public User getUser() {
+        //System.out.println(Jwts.parser().setSigningKey(this.key).parseClaimsJws(this.jwt).getBody().values());
         String chunkUser = Jwts.parser().setSigningKey(this.key).parseClaimsJws(this.jwt).getBody().getSubject();
-        chunkUser = chunkUser.substring(9, chunkUser.length()-1);
-        System.out.println(chunkUser);
-        //return JsonParser.toObject(Jwts.parser().setSigningKey(this.key).parseClaimsJws(this.jwt).getBody().getSubject());
-        return chunkUser;
+        return JsonParser.toObject(chunkUser.substring(9, chunkUser.length()-1));
     }
 
     public static String getJwt(User user) {
-        System.out.println("{\"user\": " + JsonParser.toJsonString(user) + "}");
         byte[] key = null;
         try {
-//        key = (salt + user.getUsername() + user.getPassword()).getBytes("UTF-8");
             key = ("besy1234").getBytes("UTF-8");
             MessageDigest sha = MessageDigest.getInstance("SHA-512");
             key = sha.digest(key);
@@ -77,10 +66,7 @@ public class Token {
             e.printStackTrace();
         }
         return  Jwts.builder()
-                //.setSubject(JsonParser.toJsonString(user))
-                //.setSubject("{\"user\": {\"name\": \"test\", \"pass\": \"123\"}}")
                 .setSubject("{\"user\": " + JsonParser.toJsonString(user) + "}")
-                //.setPayload(user.getPassword())
                 .signWith(SignatureAlgorithm.HS512, key)
                 .compact();
     }
